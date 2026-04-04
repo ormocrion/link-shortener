@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cокращатель</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="../scripts/script.js"></script>
+  </head>
+  <body>
+    <div id="clock"></div>
+    <h1>{{.Title}}</h1>
+    <p>{{.Text}}</p>
+    <form action="http://localhost/short/" method="POST">
+      <input
+        type="text"
+        id="textarea"
+        name="inputLink"
+        size="60"
+        placeholder="Скопируем сюда ссылку"
+      />
+      <button>Укоротить</button>
+    </form>
+  </body>
+</html>
