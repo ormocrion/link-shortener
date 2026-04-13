@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -20,9 +21,15 @@ type Bookmark struct {
 }
 
 type Page struct {
-	Title string
 	Text string
 }
+
+var (
+	staticDir = getAbsDirPath() + "/static/"
+	templatesDir = staticDir + "/templates"
+	templates = template.Must(template.ParseFiles(templatesDir + "/index.html",
+	))
+)
 
 var listOfBookmarks = make(map[string]string, 100_000)
 var input string
@@ -30,6 +37,7 @@ var input string
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 func consoleHandler() {
+	fmt.Println(getAbsDirPath())
 	fmt.Printf("Введите ссылку: ")
 	fmt.Scan(&input)
 	input = checkLink(input)
@@ -103,24 +111,79 @@ func generateRandomString(length int) string {
 	return string(result)
 }
 
-func mainHandler(w http.ResponseWriter, r *http.Request) {
-	data := Page{
-		Title: "Cокращатель ссылок",
-		Text: "Давайте поместим ссылку ниже и посмотрим на то, как она станет короче!",
-	}
-	tmpl, _ := template.ParseFiles("templates/index.html")
-	tmpl.Execute(w, data)
-} 
+func redirectLinkFormer(alias string) string {
+	aliasLink := "localhost/url/" + alias;
+	
+	return aliasLink;
+}
 
-func redirectToUrl(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path[len("/url/"):]
-	url := listOfBookmarks[path]
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	data := Page{
+		Text: "Укоротим ссылку без потери качества!",
+	}
+	err := templates.ExecuteTemplate(w, "index.html", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func staticHandler(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	if strings.HasSuffix(path, "js") {
+		w.Header().Set("Content-Type", "text/javascript")
+	} else {
+		w.Header().Set("Content-Type", "text/css")
+	}
+	data, err := os.ReadFile(staticDir + path[1:])
+	if err != nil {
+		fmt.Print(err)
+	}
+	_, err = w.Write(data)
+	if err != nil {
+		fmt.Print(err)
+	}
+}
+
+func shortHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	body, err := io.ReadAll(r.Body)
+	
+	
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError);
+		return;
+	}
+
+	link := checkLink(string(body[:]));
+	alias := generateRandomString(8);
+	aliasLink := redirectLinkFormer(alias);
+	listOfBookmarks[alias] = link;
+
+	w.Write([]byte(aliasLink));
+}
+
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path[len("/url/"):];
+	url := listOfBookmarks[path];
+
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }
 
+func getAbsDirPath() string {
+	pwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return pwd
+}
+
 func main() {
-	// consoleHandler()
-	http.HandleFunc("/", mainHandler)
-	http.HandleFunc("/url/", redirectToUrl)
+	http.HandleFunc("/scripts/", staticHandler)
+	http.HandleFunc("/css/", staticHandler)
+	http.HandleFunc("/", indexHandler)	
+	http.HandleFunc("/short/", shortHandler)
+	http.HandleFunc("/url/", redirectHandler)
 	log.Fatal(http.ListenAndServe(":80", nil))
 }

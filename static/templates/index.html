@@ -3,22 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cокращатель</title>
-    <link rel="stylesheet" href="../css/style.css" />
-    <script src="../scripts/script.js"></script>
+    <link rel="stylesheet" href="../css/index.css" />
+    <script src="../scripts/index.js"></script>
   </head>
   <body>
-    <div id="clock"></div>
-    <h1>{{.Title}}</h1>
-    <p>{{.Text}}</p>
-    <form action="http://localhost/short/" method="POST">
+    <div id="top">
+      <h1>Линкорубка</h1>
+      <p>{{.Text}}</p>
+    </div>
+    <form id="linkarea">
       <input
         type="text"
-        id="textarea"
-        name="inputLink"
-        size="60"
+        id="inputLink"
+        name="link"
         placeholder="Скопируем сюда ссылку"
+        required
       />
-      <button>Укоротить</button>
+      <button type="submit" value="short">Укоротить</button>
+      <button type="reset">Очистить</button>
     </form>
+    <div id="output">
+      <p>Готово! Ваша короткая ссылка:</p>
+      <input id="aliasLink"></input>
+      <button type="button" id="copy">Копировать</button>
+      <div id="hoverCopyMessage">Скопировано</div>
+    </div>
   </body>
 </html>

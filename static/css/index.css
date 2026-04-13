@@ -1,0 +1,18 @@
+#top > p {
+  color: blueviolet;
+}
+
+input {
+  width: 60%;
+  background-color: rgb(246, 210, 147);
+}
+
+#output {
+  display: none;
+}
+
+#hoverCopyMessage {
+  display: none;
+  background-color: grey;
+  color: white;
+}
