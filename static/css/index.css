@@ -1,10 +1,9 @@
 #top > p {
-  color: blueviolet;
+  color: rgb(80, 80, 80);
 }
 
 input {
   width: 60%;
-  background-color: rgb(246, 210, 147);
 }
 
 #output {
